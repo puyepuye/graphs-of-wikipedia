@@ -63,31 +63,6 @@ def get_links_in_page(current_url):
             lst.append(next_url)
     return lst
 
-def go_through_links_once(start_url, visited_file, graph_file):
-    visited = set()
-    data = defaultdict(set)
-    i = 0
-
-    try:
-        with open(visited_file, 'r') as f:
-            visited = set(json.load(f))
-    except FileNotFoundError:
-        pass
-    
-    current_url = start_url
-    current_title = url_to_title(current_url)
-    if current_url not in visited:
-        visited.add(current_url)
-
-        for link in get_links_in_page(current_url):
-            title = url_to_title(link)
-            data[current_title].add(title)
-
-        print(i, current_url)
-    with open(visited_file, 'w') as f:
-        json.dump(list(visited), f)
-    save_dict_to_file(graph_file, data)
-
 def go_through_links_recursive(start_url, visited_file, graph_file, limit, level, current_level=0):
     visited = set()
     data = defaultdict(set)
@@ -128,4 +103,4 @@ def go_through_links_recursive(start_url, visited_file, graph_file, limit, level
 
 # Example usage
 start_url = 'https://en.wikipedia.org/wiki/University_Of_Toronto'
-go_through_links_recursive(start_url, 'big_visited.json', 'big_graph.json', len(get_links_in_page(start_url)), 2)
+go_through_links_recursive(start_url, 'mini_visited.json', 'mini_graph.json', 8, 2)
