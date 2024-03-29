@@ -2,7 +2,10 @@ from __future__ import annotations
 from typing import Any
 import csv
 import ast
+import os
 from visualize_template import *
+import json
+import os
 
 class _Vertex:
     """A vertex in a graph.
@@ -181,6 +184,29 @@ def load_gow(pages_file: str) -> Graph:
     return graph
 
 
+def load_dict_from_file(file_name):
+    if os.path.exists(file_name):
+        with open(file_name, 'r') as file:
+            return json.load(file)
+    else:
+        return {}
+def load_gow_json(pages_file: str) -> Graph:
+    graph = Graph()
+    unique_pages = load_dict_from_file(pages_file)
+
+    #add_vertex
+    for page in unique_pages:
+        graph.add_vertex(page)
+
+    #add_edge
+    for page in unique_pages:
+        for i in range(len(unique_pages[page])):
+            if not unique_pages[page][i] in graph._vertices:
+                graph.add_vertex(unique_pages[page][i])
+            graph.add_edge(page, unique_pages[page][i])
+
+    return graph
+
 
 #External Methods
 def generate_complete_graph(n: int) -> Graph:
@@ -206,5 +232,7 @@ def generate_complete_graph(n: int) -> Graph:
 
 
 if __name__ == '__main__':
-    graph = load_gow('../database/pages_links.csv')
-    visualize_paths(graph, 'Animals' , 'Dog')
+    # graph = load_gow('../database/pages_links.csv')
+    # visualize_paths(graph, 'Animals' , 'Dog')
+    graph = load_gow_json('../database/graph.json')
+    visualize_paths(graph, 'https://en.wikipedia.org/wiki/Tree', 'https://en.wikipedia.org/wiki/Plant_morphology')

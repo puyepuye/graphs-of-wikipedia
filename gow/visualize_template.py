@@ -24,8 +24,7 @@ def visualize_paths(graph: Graph, page_id1: str, page_id2: str) -> None:
 
     # Find all paths between page_id1 and page_id2
     graph = convert_to_networkx(graph)
-    print("Number of nodes in the graph:", graph.number_of_nodes())
-    print("Nodes present in the graph:", list(graph.nodes()))
+    print("hello")
     all_paths = list(nx.all_simple_paths(graph, source=page_id1, target=page_id2))
 
     # Create a subgraph that contains only the vertices and edges in these paths
@@ -38,6 +37,7 @@ def visualize_paths(graph: Graph, page_id1: str, page_id2: str) -> None:
     edge_x = []
     edge_y = []
     for edge in subgraph.edges():
+        print(edge)
         x0, y0 = pos[edge[0]]
         x1, y1 = pos[edge[1]]
         edge_x.extend([x0, x1, None])  # None to interrupt the line
@@ -50,6 +50,7 @@ def visualize_paths(graph: Graph, page_id1: str, page_id2: str) -> None:
     node_y = []
     text = []
     for node in subgraph.nodes():
+        print(node)
         x, y = pos[node]
         node_x.append(x)
         node_y.append(y)
