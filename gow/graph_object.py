@@ -6,6 +6,8 @@ import os
 from visualize_template import *
 import json
 import os
+from bfs import *
+from collections import defaultdict
 
 class _Vertex:
     """A vertex in a graph.
@@ -65,6 +67,7 @@ class Graph:
             v1.neighbours.add(v2)
             v2.neighbours.add(v1)
         else:
+            self.add_vertex(item1)
             # We didn't find an existing vertex for both items.
             raise ValueError
 
@@ -157,6 +160,25 @@ class Graph:
                     visited.add(u)
         return edge_set
 
+    def create_subgraph_from_paths(graph, paths):
+        """Create a new Graph containing only the nodes and edges from the given paths."""
+        dict_graph = defaultdict(list)
+        for path in paths:
+            for i in range(len(path) - 1):
+                dict_graph[path[i]].append(path[i + 1])
+
+        graph = Graph()
+        for page in dict_graph:
+            graph.add_vertex(page)
+
+        for page in dict_graph:
+            for i in range(len(dict_graph[page])):
+                if not dict_graph[page][i] in graph._vertices:
+                    graph.add_vertex(dict_graph[page][i])
+                graph.add_edge(page, dict_graph[page][i])
+
+        return graph
+
 def load_gow(pages_file: str) -> Graph:
     graph = Graph()
     unique_pages = {}
@@ -190,7 +212,8 @@ def load_dict_from_file(file_name):
             return json.load(file)
     else:
         return {}
-def load_gow_json(pages_file: str) -> Graph:
+
+def load_gow_json(pages_file: str):
     graph = Graph()
     unique_pages = load_dict_from_file(pages_file)
 
@@ -205,7 +228,7 @@ def load_gow_json(pages_file: str) -> Graph:
                 graph.add_vertex(unique_pages[page][i])
             graph.add_edge(page, unique_pages[page][i])
 
-    return graph
+    return graph, unique_pages
 
 
 #External Methods
@@ -234,5 +257,5 @@ def generate_complete_graph(n: int) -> Graph:
 if __name__ == '__main__':
     # graph = load_gow('../database/pages_links.csv')
     # visualize_paths(graph, 'Animals' , 'Dog')
-    graph = load_gow_json('../database/graph.json')
-    visualize_paths(graph, 'https://en.wikipedia.org/wiki/Tree', 'https://en.wikipedia.org/wiki/Plant_morphology')
+    graph, graph_dict = load_gow_json('../database/mini_graph.json')
+    visualize_paths(graph, graph_dict, 'Toronto Metropolitan University', 'Rhombicosidodecahedron')
