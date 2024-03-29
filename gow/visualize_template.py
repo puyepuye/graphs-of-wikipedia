@@ -1,10 +1,7 @@
-import networkx as nx
 from graph_object import *
 from plotly.graph_objs import Scatter, Figure
-import numpy as np
-import plotly as plt
-from bfs import *
-
+from gow.bfs import *
+import networkx as nx
 
 def edge_in_path(edge, path):
     """Check if an edge is in the shortest path."""

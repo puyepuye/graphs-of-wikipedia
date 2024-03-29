@@ -83,7 +83,7 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
     return {item: dist for item, dist in distances.items() if dist != float('inf')}
 
 if __name__ == '__main__':
-    mini_graph = load_dict_from_file('database/mini_graph.json')
-    small_graph = load_dict_from_file('database/small_graph.json')
-    big_graph = load_dict_from_file('database/big_graph.json')
+    mini_graph = load_dict_from_file('../database/mini_graph.json')
+    small_graph = load_dict_from_file('../database/small_graph.json')
+    big_graph = load_dict_from_file('../database/big_graph.json')
     print(BFS_paths(mini_graph, 'Toronto Metropolitan University', 'Rhombicosidodecahedron'))
