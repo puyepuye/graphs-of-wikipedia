@@ -255,3 +255,4 @@ if __name__ == '__main__':
     graph, graph_dict = load_gow_json('../database/mini_graph.json')
     visualize_paths(graph, graph_dict, 'Toronto Metropolitan University', 'Rhombicosidodecahedron')
     #claire
+    #hello claire
