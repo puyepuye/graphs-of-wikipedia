@@ -70,7 +70,7 @@ def run_pygame_window():
                 elif button_rect.collidepoint(event.pos):
                     print(f'Clicked with text 1: {input_text_1} and text 2: {input_text_2}')
                     g_g, g_d = load_gow_json('../database/mini_graph.json')
-                    print(summary(g_d, input_text_1, input_text_2))
+                    s1, s2, s3, s4, s5 = summary(g_d, input_text_1, input_text_2)
                     visualize_paths(g_g, g_d, input_text_1, input_text_2)
                     fun_fact_display = True
 
@@ -106,18 +106,6 @@ def run_pygame_window():
                         cursor.x = input_box_1.x + font.size(input_text_1)[0] + 5
                     else:
                         cursor.x = input_box_2.x + font.size(input_text_2)[0] + 5
-
-        if len(display_text)>0:
-            # Draw the textbox
-            pygame.draw.rect(window, BLACK, text_box_rect, 10, border_radius)
-            pygame.draw.circle(window, BLACK, circle_center, circle_radius)
-            # Render the display text
-            text_surface = font.render('display_text', True, BLACK)
-            text_x = text_box_rect.x + circle_radius + 10  # Adjust as needed
-            text_y = text_box_rect.y + (text_box_rect.height - text_surface.get_height()) // 2
-            window.blit(text_surface, (text_x, text_y))
-            print('FUCK TECT')
-
 
         pygame.display.flip()
 
@@ -157,6 +145,16 @@ def run_pygame_window():
 
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
+
+        if fun_fact_display:
+            # Draw the textbox
+            pygame.draw.rect(window, BLACK, text_box_rect, 10, border_radius)
+            pygame.draw.circle(window, BLACK, circle_center, circle_radius)
+            # Render the display text
+            text_surface = font.render(s1, True, BLACK)
+            text_x = text_box_rect.x + circle_radius + 10  # Adjust as needed
+            text_y = text_box_rect.y + (text_box_rect.height - text_surface.get_height()) // 2
+            window.blit(text_surface, (text_x, text_y))
 
         pygame.display.flip()
 
