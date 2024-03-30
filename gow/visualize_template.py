@@ -7,7 +7,6 @@ def edge_in_path(edge, path):
     """Check if an edge is in the shortest path."""
     return any(edge == (path[i], path[i + 1]) or edge == (path[i + 1], path[i]) for i in range(len(path) - 1))
 
-
 def convert_to_networkx(custom_graph):
     """Convert a custom graph object to a NetworkX graph."""
     nx_graph = nx.Graph()
@@ -19,6 +18,20 @@ def convert_to_networkx(custom_graph):
         nx_graph.add_edge(edge[0], edge[1])
     return nx_graph
 
+def summary(graph: dict, s1, s2):
+    min_len = len(BFS_path(graph, s1, s2))
+    paths = BFS_paths(graph, s1, s2)
+    num_paths_min_len = len([i for i in BFS_paths(graph, s1, s2) if len(i) == min_len])
+    max_len = len(max(paths, key=len))
+    summary_dict = {
+        'min_path_len': f"The shortest path length between {s1} and {s2} is {min_len - 1}.",
+        'num_of_paths': f"There are {len(paths)} possible path(s) between {s1} and {s2}.",
+        'num_of_paths_with_min_length': f"There are {num_paths_min_len} paths with the length {min_len - 1}.",
+        'max_path': f"The longest path between {s1} and {s2} is {max(paths, key=len)} with the length of {max_len}.",
+        'num_of_vertices': f"There are {len(graph)} vertices in this graph."
+    }
+    return summary_dict
+
 def visualize_paths(graph, graph_dict, page_id1, page_id2):
     """
     Visualize all paths between two vertices in a graph using networkx and plotly.
@@ -29,15 +42,10 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
     """
     all_paths = BFS_paths(graph_dict, page_id1, page_id2)
     shortest_path = BFS_path(graph_dict, page_id1, page_id2)
-    print(all_paths)
 
     subgraph = graph.create_subgraph_from_paths(all_paths)
-    print(subgraph._vertices)
-
 
     path_lengths = bfs_shortest_path_lengths(graph, page_id1)
-
-
 
     nx_subgraph = convert_to_networkx(subgraph)
     pos = nx.spring_layout(nx_subgraph)
@@ -79,6 +87,8 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
         text.append(str(node))
         # Fetch color from mapping, default to a fallback color if not found
         node_colors.append(node_color_mapping.get(node, "#000000"))  # Default/fallback color
+
+
 
     # Now, create the node_trace with the correct colors for each node
     node_trace = Scatter(
