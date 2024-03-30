@@ -3,9 +3,11 @@ from plotly.graph_objs import Scatter, Figure
 from gow.bfs import *
 import networkx as nx
 
+
 def edge_in_path(edge, path):
     """Check if an edge is in the shortest path."""
     return any(edge == (path[i], path[i + 1]) or edge == (path[i + 1], path[i]) for i in range(len(path) - 1))
+
 
 def convert_to_networkx(custom_graph):
     """Convert a custom graph object to a NetworkX graph."""
@@ -17,6 +19,7 @@ def convert_to_networkx(custom_graph):
         # Assuming get_edges() returns a list of tuples (source, target)
         nx_graph.add_edge(edge[0], edge[1])
     return nx_graph
+
 
 def summary(graph: dict, s1, s2):
     min_len = len(BFS_path(graph, s1, s2))
@@ -30,7 +33,9 @@ def summary(graph: dict, s1, s2):
         'max_path': f"The longest path between {s1} and {s2} is {max(paths, key=len)} with the length of {max_len}.",
         'num_of_vertices': f"There are {len(graph)} vertices in this graph."
     }
-    return summary_dict
+    return summary_dict['min_path_len'], summary_dict['num_of_paths'], summary_dict['num_of_paths_with_min_length'], \
+    summary_dict['max_path'], summary_dict['num_of_vertices']
+
 
 def visualize_paths(graph, graph_dict, page_id1, page_id2):
     """
@@ -49,7 +54,6 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
 
     nx_subgraph = convert_to_networkx(subgraph)
     pos = nx.spring_layout(nx_subgraph)
-
 
     x_values, y_values = zip(*pos.values())
     min_x, max_x = min(x_values), max(x_values)
@@ -88,8 +92,6 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
         # Fetch color from mapping, default to a fallback color if not found
         node_colors.append(node_color_mapping.get(node, "#000000"))  # Default/fallback color
 
-
-
     # Now, create the node_trace with the correct colors for each node
     node_trace = Scatter(
         x=node_x, y=node_y, text=text, mode='markers+text', hoverinfo='text',
@@ -113,7 +115,6 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
         else:
             other_edge_x.extend([x0, x1, None])
             other_edge_y.extend([y0, y1, None])
-
 
     shortest_path_trace = Scatter(
         x=shortest_edge_x, y=shortest_edge_y,
