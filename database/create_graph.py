@@ -1,9 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from collections import deque
 import json
 import os
-import pandas as pd
 from collections import defaultdict
 
 def url_to_title(url: str) -> str:

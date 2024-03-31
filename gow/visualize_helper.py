@@ -1,6 +1,5 @@
 from graph_object import *
 from plotly.graph_objs import Scatter, Figure
-from gow.bfs import *
 import networkx as nx
 
 
@@ -30,12 +29,10 @@ def summary(graph: dict, s1, s2):
         'min_path_len': f"The shortest path length between {s1} and {s2} is {min_len - 1}.",
         'num_of_paths': f"There are {len(paths)} possible path(s) between {s1} and {s2}.",
         'num_of_paths_with_min_length': f"There are {num_paths_min_len} paths with the length {min_len - 1}.",
-        'max_path': f"The longest path between {s1} and {s2} is {max(paths, key=len)} with the length of {max_len}.",
         'num_of_vertices': f"There are {len(graph)} vertices in this graph."
     }
-    return summary_dict['min_path_len'], summary_dict['num_of_paths'], summary_dict['num_of_paths_with_min_length'], \
-    summary_dict['max_path'], summary_dict['num_of_vertices']
-
+    return summary_dict
+    #'max_path': f"The longest path between {s1} and {s2} is {max(paths, key=len)} with the length of {max_len}.",
 
 def visualize_paths(graph, graph_dict, page_id1, page_id2):
     """

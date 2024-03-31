@@ -1,8 +1,10 @@
 from __future__ import annotations
-from visualize_template import *
-from gow.bfs import *
+from visualize_helper import *
 from collections import defaultdict
 from typing import Any
+from collections import deque
+import json
+import os
 
 class _Vertex:
     """A vertex in a graph.
@@ -226,27 +228,77 @@ def load_gow_json(pages_file: str):
     return graph, unique_pages
 
 
-#External Methods
-def generate_complete_graph(n: int) -> Graph:
-    """Return a graph of n vertices where all pairs of vertices are adjacent.
 
-    The vertex items are the numbers 0 through n - 1, inclusive.
-    When n == 0, return an empty Graph.
+def BFS_path(G, s1, s2):
+    E = set([s2])
+    Q = deque([[s1]])
+    while Q:
+        path = Q.popleft()
+#         print(path)
+        node = path[-1]
+        if node not in G:
+            raise ValueError
+#         print(Q)
+        if node == s2:
+            return path
+        if node not in E:
+            adjacents = G[node]
+            for i in adjacents:
+                newpath = list(path)
+                newpath.append(i)
+                Q.append(newpath)
+                E.add(node)
+    return None
 
-    Preconditions:
-        - n >= 0
+def BFS_paths(graph, start, end, path=[]):
+    path = path + [start]
+    if start == end:
+        return [path]
+    if start not in graph:
+        return []
+    paths = []
+    for node in graph[start]:
+        if node not in path:
+            new_paths = BFS_paths(graph, node, end, path)
+            for new_path in new_paths:
+                paths.append(new_path)
+    return paths
+
+def bfs_shortest_path_lengths(graph, source_item) -> dict:
     """
+    Calculate the shortest path lengths from the source_item to all other vertices
+    in the graph using a BFS traversal.
 
-    graph_so_far = Graph()
+    Args:
+    - graph: The graph object, instance of Graph.
+    - source_item: The item stored in the source vertex.
 
-    for i in range(n):
-        graph_so_far.add_vertex(i)
+    Returns:
+    A dictionary mapping each vertex item to its shortest path length from the source.
+    If a vertex is unreachable from the source, it will not appear in the dictionary.
+    """
+    # Initialize distances dictionary with infinity for all vertices
+    distances = {vertex.item: float('inf') for vertex in graph._vertices.values()}
+    # Set the distance to the source itself to 0
+    distances[source_item] = 0
 
-        # Add edges to all previous vertices (0 <= j < i)
-        for j in range(0, i):
-            graph_so_far.add_edge(i, j)
+    # Queue for BFS, initialized with the source vertex
+    queue = deque([source_item])
 
-    return graph_so_far
+    while queue:
+        current_item = queue.popleft()
+        current_vertex = graph._vertices[current_item]
+
+        for neighbour in current_vertex.neighbours:
+            # If the neighbour hasn't been visited (distance is infinity)
+            if distances[neighbour.item] == float('inf'):
+                # Update the distance to this neighbour
+                distances[neighbour.item] = distances[current_item] + 1
+                # Add the neighbour to the queue for further exploration
+                queue.append(neighbour.item)
+
+    # Filter out the vertices that were not reachable (distance is still infinity)
+    return {item: dist for item, dist in distances.items() if dist != float('inf')}
 
 
 if __name__ == '__main__':

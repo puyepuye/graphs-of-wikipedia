@@ -1,6 +1,6 @@
 import pygame
 import sys
-from visualize_template import *
+from visualize_helper import *
 from graph_object import *
 
 def run_pygame_window():
@@ -39,18 +39,13 @@ def run_pygame_window():
 
 
     # Fun Fact Text box
-    rect_width = 300
+    BLACK = (0, 0, 0)
+    DARK_GREEN = (0, 100, 0)
+    rect_width = 700  # Adjusted for wider rectangle
     rect_height = 40
     border_radius = 20
-    circle_radius = rect_height // 2
-
-    # Calculate positions
-    rect_x = (window_width // 2) - (rect_width // 2) - circle_radius  # Subtract circle radius to offset for the circle
-    rect_y = (window_height // 2) - (rect_height // 2)
-
-    # Create the rectangle and circle for the text box
-    text_box_rect = pygame.Rect(rect_x, rect_y, rect_width, rect_height)
-    circle_center = (rect_x, rect_y + circle_radius)
+    circle_radius = rect_height // 1.7
+    border_thickness = 2  # Thinner border
 
     # Main loop
     running = True
@@ -70,7 +65,8 @@ def run_pygame_window():
                 elif button_rect.collidepoint(event.pos):
                     print(f'Clicked with text 1: {input_text_1} and text 2: {input_text_2}')
                     g_g, g_d = load_gow_json('../database/mini_graph.json')
-                    s1, s2, s3, s4, s5 = summary(g_d, input_text_1, input_text_2)
+                    summary_dict = summary(g_d, input_text_1, input_text_2)
+                    fact = [v for v in summary_dict.values()]
                     visualize_paths(g_g, g_d, input_text_1, input_text_2)
                     fun_fact_display = True
 
@@ -145,16 +141,32 @@ def run_pygame_window():
 
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
+        start_y = (window_height // 2) - (5 * rect_height) // 9 + 15
 
         if fun_fact_display:
-            # Draw the textbox
-            pygame.draw.rect(window, BLACK, text_box_rect, 10, border_radius)
-            pygame.draw.circle(window, BLACK, circle_center, circle_radius)
-            # Render the display text
-            text_surface = font.render(s1, True, BLACK)
-            text_x = text_box_rect.x + circle_radius + 10  # Adjust as needed
-            text_y = text_box_rect.y + (text_box_rect.height - text_surface.get_height()) // 2
-            window.blit(text_surface, (text_x, text_y))
+            # fun_fact_icons = ["facts_icon/1.png"]
+            for i in range(len(fact)):
+                rect_x = (window_width // 2) -200 - circle_radius * 2 - 100 # Adjusted for circle to start more on the left
+                rect_y = start_y + i * (rect_height + 10)  # 10 pixels space between each fact box
+
+                # Create the rectangle for the text box
+                text_box_rect = pygame.Rect(rect_x, rect_y, rect_width, rect_height)
+                circle_center = (rect_x + 10, rect_y + circle_radius - 2.5)
+
+                # Draw the textbox
+                pygame.draw.rect(window, DARK_GREEN, text_box_rect, border_thickness, border_radius)
+                pygame.draw.circle(window, DARK_GREEN, circle_center, circle_radius)  # Dark green circle
+                  # Adjust this value to change the font size
+                twenty_font = pygame.font.Font(None, 25)  # Using Pygame's default font
+
+                # Render the display text
+                text_surface = twenty_font.render(fact[i], True, BLACK)
+                text_x = text_box_rect.x + circle_radius * 2 - 5  # Adjusted to position text with the new circle position
+                text_y = text_box_rect.y + (text_box_rect.height - text_surface.get_height()) // 2
+                window.blit(text_surface, (text_x, text_y))
+                bg = pygame.image.load(f'facts_icon/{i+1}.png')
+                bg = pygame.transform.scale(bg, (circle_radius * 2, circle_radius * 2))
+                window.blit(bg, (circle_center[0] - circle_radius, circle_center[1] - circle_radius))
 
         pygame.display.flip()
 
