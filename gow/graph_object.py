@@ -5,6 +5,7 @@ from typing import Any
 from collections import deque
 import json
 import os
+import wikipediaapi
 
 class _Vertex:
     """A vertex in a graph.
@@ -248,9 +249,9 @@ def BFS_path(G, s1, s2):
                 newpath.append(i)
                 Q.append(newpath)
                 E.add(node)
-    return None
+    return []
 
-def BFS_paths(graph, start, end, path=[]):
+def DFS_paths(graph, start, end, path=[]):
     path = path + [start]
     if start == end:
         return [path]
@@ -263,6 +264,88 @@ def BFS_paths(graph, start, end, path=[]):
             for new_path in new_paths:
                 paths.append(new_path)
     return paths
+
+def bidirectional(graph, start_article, end_article, bound=None):
+    def get_links(article, graph):
+        return graph.get(article, [])
+
+    def get_backlinks(article, graph):
+        backlinks = []
+        for article_name, links in graph.items():
+            if article in links:
+                backlinks.append(article_name)
+        return backlinks
+
+    def extend_path(path, link):
+        new_path = list(path)
+        new_path.append(link)
+        return new_path
+
+    def remove_middle_section(path):
+        visited = set()
+        new_path = []
+
+        for vertex in path:
+            if vertex not in visited:
+                visited.add(vertex)
+                new_path.append(vertex)
+            else:
+                # Found the second occurrence of the vertex, remove the middle section
+                idx = new_path.index(vertex)
+                new_path = new_path[:idx + 1]
+                visited = set(new_path)
+
+        return tuple(new_path)
+
+    paths = set()
+    list_a = [[start_article]]
+    list_b = [[end_article]]
+
+    if not get_links(start_article, graph) or not get_backlinks(end_article, graph):
+        return {}
+    while list_a and list_b and (bound is None or len(paths) < bound) and len(list_a) < len(graph) and len(list_b) < len(graph):
+        new_paths = []
+        for path_a in list_a:
+            current_article = path_a[-1]
+            for link in get_links(current_article, graph):
+                if link == end_article:
+                    paths.add(tuple(path_a[::-1] + [link]))
+                if link in list_b[0]:
+                    idx = list_b[0].index(link)
+                    new_path_a = extend_path(path_a, link)
+                    new_path_b = list_b[0][:idx]
+                    new_paths.append(new_path_a + new_path_b[::-1])
+                elif link not in path_a:
+                    new_paths.append(extend_path(path_a, link))
+        list_a = new_paths
+
+        new_paths = []
+        for path_b in list_b:
+            current_article = path_b[-1]
+            for link in get_backlinks(current_article, graph):
+                if link == start_article:
+                    paths.add(tuple([link] + path_b[::-1]))
+                if link in list_a[0]:
+                    idx = list_a[0].index(link)
+                    new_path_b = extend_path(path_b, link)
+                    new_path_a = list_a[0][:idx]
+                    if new_path_b[-1] == start_article:
+                        paths.add(tuple([link] + path_b[::-1]))
+                    new_paths.append(new_path_a[::-1] + new_path_b)
+                elif link not in path_b:
+                    new_paths.append(extend_path(path_b, link))
+        list_b = new_paths
+
+        for path_a in list_a:
+            for path_b in list_b:
+                if path_a[-1] == path_b[-1]:
+                    paths.add(tuple(path_a + path_b[::-1]))
+                if path_a[-1] == end_article:
+                    paths.add(tuple(path_a))
+                if path_b[-1] == start_article:
+                    paths.add(tuple(path_b))
+    return {remove_middle_section(path) for path in paths}
+
 
 def bfs_shortest_path_lengths(graph, source_item) -> dict:
     """
@@ -302,8 +385,10 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
 
 
 if __name__ == '__main__':
-    # graph = load_gow('../database/pages_links.csv')
-    # visualize_paths(graph, 'Animals' , 'Dog')
-    graph, graph_dict = load_gow_json('../database/mini_graph.json')
-    print(summary(graph_dict, 'University Of Toronto', 'Geodesy'))
-    visualize_paths(graph, graph_dict, 'University Of Toronto', 'Geodesy')
+    graph_dict = load_dict_from_file('../database/small_graph.json')
+    # visualize_paths(graph, graph_dict, 'University Of Toronto', 'Geodesy')
+    start_article = 'Color'
+    end_article = 'Jesus'
+    paths = bidirectional(graph_dict, start_article, end_article)
+    print(paths)
+    print(BFS_path(graph_dict, start_article, end_article))
