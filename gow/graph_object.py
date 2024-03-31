@@ -259,10 +259,11 @@ def DFS_paths(graph, start, end, path=[]):
     paths = []
     for node in graph[start]:
         if node not in path:
-            new_paths = BFS_paths(graph, node, end, path)
+            new_paths = DFS_paths(graph, node, end, path)
             for new_path in new_paths:
                 paths.append(new_path)
     return paths
+
 
 def bidirectional(graph, start_article, end_article, bound=None):
     def get_links(article, graph):
@@ -343,7 +344,7 @@ def bidirectional(graph, start_article, end_article, bound=None):
                     paths.add(tuple(path_a))
                 if path_b[-1] == start_article:
                     paths.add(tuple(path_b))
-    return {remove_middle_section(path) for path in paths}
+    return sorted(list({remove_middle_section(path) for path in paths}), key=len)[:bound]
 
 
 def bfs_shortest_path_lengths(graph, source_item) -> dict:
@@ -385,7 +386,6 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
 
 if __name__ == '__main__':
     graph_dict = load_dict_from_file('../database/small_graph.json')
-    # visualize_paths(graph, graph_dict, 'University Of Toronto', 'Geodesy')
     start_article = 'Jarrow'
     end_article = 'Tree Model'
     paths = bidirectional(graph_dict, start_article, end_article)

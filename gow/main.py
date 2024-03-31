@@ -3,13 +3,14 @@ import sys
 from visualize_helper import *
 from graph_object import *
 
+
 def run_pygame_window():
     pygame.init()
     window_width, window_height = 800, 600
     window = pygame.display.set_mode((window_width, window_height))
-    pygame.display.set_caption('Clickable Button in Pygame')
+    pygame.display.set_caption('Graph Of Wikipedia')
 
-    #Logo
+    # Logo
     # Load the logo image
     # logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
     # logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
@@ -30,10 +31,10 @@ def run_pygame_window():
     fun_fact_display = False
     not_found = False
     no_vertex = False
-
+    toggle1, toggle2 = True, False
     # Create a button
     button_font = pygame.font.SysFont(None, 30)
-    button_rect = pygame.Rect(window_width // 2 - 125, window_height // 2 - 75, 250, 50)
+    button_rect = pygame.Rect(window_width // 2 - 125, window_height // 2 - 40, 250, 50)
     button_text = button_font.render('Find paths!', True, BLACK)
 
     # Cursor logic
@@ -55,6 +56,10 @@ def run_pygame_window():
     border_radius = 20
     circle_radius = rect_height // 1.7
     border_thickness = 2  # Thinner border
+    check1 = (180, 238)
+    check2 = (450, 238)
+    check_r = 9
+    bound = 50
 
     # Main loop
     running = True
@@ -80,7 +85,7 @@ def run_pygame_window():
                         if BFS_path(g_d, input_text_1, input_text_2) != []:
                             summary_dict = summary(g_d, input_text_1, input_text_2)
                             fact = [v for v in summary_dict.values()]
-                            visualize_paths(g_g, g_d, input_text_1, input_text_2)
+                            visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
                             fun_fact_display = True
                         else:
                             not_found = True
@@ -92,7 +97,14 @@ def run_pygame_window():
                     my_font = pygame.font.SysFont('Arial', 20)
                     text_surface = my_font.render('to', False, (0, 0, 0))
                     window.blit(text_surface, (0, 0))
-
+                elif pygame.math.Vector2(mouse_pos).distance_to(pygame.math.Vector2(check1)) <= check_r:
+                    toggle1 = True
+                    toggle2 = False
+                    bound = 50
+                elif pygame.math.Vector2(mouse_pos).distance_to(pygame.math.Vector2(check2)) <= check_r:
+                    toggle2 = True
+                    toggle1 = False
+                    bound = None
                 else:
                     active_box_1, active_box_2 = False, False
 
@@ -145,7 +157,25 @@ def run_pygame_window():
 
         my_font = pygame.font.SysFont('Arial', 20)
         text_surface = my_font.render('to', False, (0, 0, 0))
+
         window.blit(text_surface, (395, 145))
+
+        check_font = pygame.font.SysFont('Arial', 12)
+        # Checkbox 1
+        pygame.draw.circle(window, (200, 200, 200), check1, check_r)
+        pygame.draw.circle(window, BLACK, check1, check_r, 1)
+        check_text1 = check_font.render("Show top 50 paths (faster)", True, BLACK)
+        window.blit(check_text1, (check1[0] + check_r + 10, check1[1] - check_text1.get_height() // 2))
+        # Checkbox 2
+        pygame.draw.circle(window, (200, 200, 200), check2, check_r)
+        pygame.draw.circle(window, BLACK, check2, check_r, 1)
+        check_text2 = check_font.render("Show all paths", True, BLACK)
+        window.blit(check_text2, (check2[0] + check_r + 10, check2[1] - check_text2.get_height() // 2))
+
+        if toggle1:
+            pygame.draw.circle(window, BLACK, check1, check_r)
+        if toggle2:
+            pygame.draw.circle(window, BLACK, check2, check_r)
 
         # Draw the cursor if the box is active and the cursor is visible
         if (active_box_1 or active_box_2) and cursor_visible:
@@ -158,7 +188,7 @@ def run_pygame_window():
 
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
-        start_y = (window_height // 2) - (5 * rect_height) // 9 + 15
+        start_y = (window_height // 2) - (5 * rect_height) // 9 + 50
 
         if no_vertex:
             twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font
@@ -173,7 +203,7 @@ def run_pygame_window():
         if fun_fact_display:
             # fun_fact_icons = ["facts_icon/1.png"]
             for i in range(len(fact)):
-                rect_x = (window_width // 2) -200 - circle_radius * 2 - 100 # Adjusted for circle to start more on the left
+                rect_x = (window_width // 2) - 200 - circle_radius * 2 - 100 # Adjusted for circle to start more on the left
                 rect_y = start_y + i * (rect_height + 10)  # 10 pixels space between each fact box
 
                 # Create the rectangle for the text box
@@ -199,6 +229,7 @@ def run_pygame_window():
 
     pygame.quit()
     sys.exit()
+
 
 if __name__ == '__main__':
     run_pygame_window()
