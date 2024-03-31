@@ -5,7 +5,6 @@ from typing import Any
 from collections import deque
 import json
 import os
-import wikipediaapi
 
 class _Vertex:
     """A vertex in a graph.

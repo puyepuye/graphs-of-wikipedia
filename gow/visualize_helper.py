@@ -51,6 +51,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
 
     nx_subgraph = convert_to_networkx(subgraph)
     pos = nx.spring_layout(nx_subgraph)
+    #pos = nx.spring_layout(nx_subgraph, k=2.0, iterations=20) trying to spread it out more
 
     x_values, y_values = zip(*pos.values())
     min_x, max_x = min(x_values), max(x_values)
@@ -115,9 +116,9 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
 
     shortest_path_trace = Scatter(
         x=shortest_edge_x, y=shortest_edge_y,
-        line=dict(width=2.5, color='black'),  # Make these edges thicker and gold
+        line=dict(width=2.5, color='black'),
         hoverinfo='text',
-        text='Shortest Path',  # Hover text
+        text='Shortest Path',
         mode='lines'
     )
 

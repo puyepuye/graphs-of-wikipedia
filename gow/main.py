@@ -11,10 +11,10 @@ def run_pygame_window():
 
     #Logo
     # Load the logo image
-    logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
-    logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
-    logo_image = pygame.transform.scale(logo_image, logo_size)
-    logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
+    # logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
+    # logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
+    # logo_image = pygame.transform.scale(logo_image, logo_size)
+    # logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
 
     # Define colors and font
     BUTTON_NORMAL = (100, 200, 100)
