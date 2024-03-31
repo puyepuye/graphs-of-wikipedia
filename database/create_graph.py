@@ -7,13 +7,13 @@ from collections import defaultdict
 def url_to_title(url: str) -> str:
     # Step 1: Extract the last part of the URL
     last_part = url.split('/')[-1]
-    
+
     # Step 2: Replace underscores with spaces
     formatted_string = last_part.replace('_', ' ')
-    
+
     # Step 3: Capitalize the first letter of each word
     title = formatted_string.title()
-    
+
     return title
 
 def save_dict_to_file(file_path, data):
@@ -101,4 +101,4 @@ def go_through_links_recursive(start_url, visited_file, graph_file, limit, level
 
 # Example usage
 start_url = 'https://en.wikipedia.org/wiki/University_Of_Toronto'
-go_through_links_recursive(start_url, 'mini_visited.json', 'mini_graph.json', 8, 2)
+go_through_links_recursive(start_url, 'small_visited.json', 'small_graph.json', 15, 2)
