@@ -32,6 +32,8 @@ This code defines a breadth-first search (BFS) function BFS_path that finds a pa
 - expand the graph (claire)
 - clean up pyTA
 - The latex stuff
+- Improve readability (Mac)
+- Automcomplete for when you input something (Mac)
 
 ## Getting Started 🚀
 
