@@ -20,11 +20,10 @@ def convert_to_networkx(custom_graph):
     return nx_graph
 
 
-def summary(graph: dict, s1, s2):
+def summary(graph: dict, s1, s2, bound):
     min_len = len(BFS_path(graph, s1, s2))
-    paths = bidirectional(graph, s1, s2)
+    paths = bidirectional(graph, s1, s2, bound)
     num_paths_min_len = len([i for i in bidirectional(graph, s1, s2) if len(i) == min_len])
-    max_len = len(max(paths, key=len))
     summary_dict = {
         'min_path_len': f"The shortest path length between {s1} and {s2} is {min_len - 1}.",
         'num_of_paths': f"There are {len(paths)} possible path(s) between {s1} and {s2}.",

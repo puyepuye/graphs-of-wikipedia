@@ -83,7 +83,7 @@ def run_pygame_window():
                     g_g, g_d = load_gow_json('../database/big_graph.json')
                     if input_text_1 in g_d and input_text_2 in g_d:
                         if BFS_path(g_d, input_text_1, input_text_2) != []:
-                            summary_dict = summary(g_d, input_text_1, input_text_2)
+                            summary_dict = summary(g_d, input_text_1, input_text_2, bound)
                             fact = [v for v in summary_dict.values()]
                             visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
                             fun_fact_display = True
