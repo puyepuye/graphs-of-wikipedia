@@ -28,6 +28,8 @@ def run_pygame_window():
     input_text_1, input_text_2 = '', ''
     active_box_1, active_box_2 = False, False
     fun_fact_display = False
+    not_found = False
+    no_vertex = False
 
     # Create a button
     button_font = pygame.font.SysFont(None, 30)
@@ -64,18 +66,26 @@ def run_pygame_window():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if input_box_1.collidepoint(event.pos):
+                    not_found, fun_fact_display, no_vertex = False, False, False
                     active_box_1, active_box_2 = True, False
                     cursor.topleft = (input_box_1.x + font.size(input_text_1)[0] + 5, input_box_1.y + 5)
                 elif input_box_2.collidepoint(event.pos):
+                    not_found, fun_fact_display, no_vertex = False, False, False
                     active_box_1, active_box_2 = False, True
                     cursor.topleft = (input_box_2.x + font.size(input_text_2)[0] + 5, input_box_2.y + 5)
                 elif button_rect.collidepoint(event.pos):
                     print(f'Clicked with text 1: {input_text_1} and text 2: {input_text_2}')
-                    g_g, g_d = load_gow_json('../database/mini_graph.json')
-                    summary_dict = summary(g_d, input_text_1, input_text_2)
-                    fact = [v for v in summary_dict.values()]
-                    visualize_paths(g_g, g_d, input_text_1, input_text_2)
-                    fun_fact_display = True
+                    g_g, g_d = load_gow_json('../database/big_graph.json')
+                    if input_text_1 in g_d and input_text_2 in g_d:
+                        if BFS_path(g_d, input_text_1, input_text_2) != []:
+                            summary_dict = summary(g_d, input_text_1, input_text_2)
+                            fact = [v for v in summary_dict.values()]
+                            visualize_paths(g_g, g_d, input_text_1, input_text_2)
+                            fun_fact_display = True
+                        else:
+                            not_found = True
+                    else:
+                        no_vertex = True
 
                     # Draw the text content in the text box
                     # You need to define display_text somewhere above, e.g., display_text = "Some text"
@@ -83,12 +93,12 @@ def run_pygame_window():
                     text_surface = my_font.render('to', False, (0, 0, 0))
                     window.blit(text_surface, (0, 0))
 
-
                 else:
                     active_box_1, active_box_2 = False, False
 
                 pygame.display.flip()
             elif event.type == pygame.KEYDOWN:
+                not_found, fun_fact_display, no_vertex = False, False, False
                 if active_box_1 or active_box_2:
                     # Determine which box is active and assign the input text accordingly
                     input_text = input_text_1 if active_box_1 else input_text_2
@@ -149,6 +159,16 @@ def run_pygame_window():
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
         start_y = (window_height // 2) - (5 * rect_height) // 9 + 15
+
+        if no_vertex:
+            twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font
+            text_surface = twenty_font.render(f'Input Page not found in graph', True, RED)
+            window.blit(text_surface, (window_width//2 - 90, 60))
+
+        if not_found:
+            twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font
+            text_surface = twenty_font.render(f'Path not found', True, RED)
+            window.blit(text_surface, (window_width//2 - 45, 60))
 
         if fun_fact_display:
             # fun_fact_icons = ["facts_icon/1.png"]
