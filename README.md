@@ -5,7 +5,7 @@ CSC111 Final Project 2
 # Proposal Docs
 https://docs.google.com/document/d/1ezulcVQjRDMUXfZqLp5jb7Ybjxgoc2sCfNWQQUa2XYA/edit
 
-#Written Report
+# Written Report
 https://docs.google.com/document/d/1ToBFi4Q5BQbz96f43Byr7zsaZ32mNc5NoW_L4xGs43U/edit
 
 # About
