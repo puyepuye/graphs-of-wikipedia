@@ -1,6 +1,7 @@
 from graph_object import *
 from plotly.graph_objs import Scatter, Figure
 import networkx as nx
+from pyvis import network as net
 
 
 def edge_in_path(edge, path):
@@ -8,15 +9,17 @@ def edge_in_path(edge, path):
     return any(edge == (path[i], path[i + 1]) or edge == (path[i + 1], path[i]) for i in range(len(path) - 1))
 
 
-def convert_to_networkx(custom_graph):
+def convert_to_networkx(custom_graph, path):
     """Convert a custom graph object to a NetworkX graph."""
     nx_graph = nx.Graph()
     # Assuming your custom Graph has methods to access its vertices and edges
     for vertex in custom_graph._vertices:
         nx_graph.add_node(vertex)
     for edge in custom_graph.all_edge():
-        # Assuming get_edges() returns a list of tuples (source, target)
-        nx_graph.add_edge(edge[0], edge[1])
+        if edge[0] in path and edge[1] in path:
+            nx_graph.add_edge(edge[0], edge[1],width=30,color='g')
+        else:
+            nx_graph.add_edge(edge[0], edge[1])
     return nx_graph
 
 
@@ -137,3 +140,43 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
     )
 
     fig.show()
+
+def drawgraph3(networkx_graph,path=[],notebook=True,output_filename='graph.html',show_buttons=False,only_physics_buttons=False):
+        """
+
+        """
+        pyvis_graph = net.Network(notebook=notebook)
+        pyvis_graph.width = '1500px'
+        # for each node and its attributes in the networkx graph
+        for node,node_attrs in networkx_graph.nodes(data=True):
+            if node == path[0]:
+                pyvis_graph.add_node(node,node_attrs, color='#ff4d4d', x = 200, y = 200)
+            elif node == path[-1]:
+                pyvis_graph.add_node(node,node_attrs, color='#fffd8f', x = 500, y= 500)
+            elif node in path:
+                pyvis_graph.add_node(node,node_attrs, color='#ffc973')  
+            
+            pyvis_graph.add_node(node,node_attrs)
+    #         print(node,node_attrs)
+
+        # for each edge and its attributes in the networkx graph
+        for source,target,edge_attrs in networkx_graph.edges(data=True):
+            # if value/width not specified directly, and weight is specified, set 'value' to 'weight'
+            if not 'value' in edge_attrs and not 'width' in edge_attrs and 'weight' in edge_attrs:
+                # place at key 'value' the weight of the edge
+                edge_attrs['value']=edge_attrs['weight']
+            # add the edge
+            if target in path and source in path:
+                pyvis_graph.add_edge(source,target,color='#ffc973',width=10)
+            else:
+                pyvis_graph.add_edge(source,target)
+        pyvis_graph.inherit_edge_colors(False)
+        # turn buttons on
+        if show_buttons:
+            if only_physics_buttons:
+                pyvis_graph.show_buttons(filter=['physics'])
+            else:
+                pyvis_graph.show_buttons()
+
+        # return and also save
+        return pyvis_graph.show(output_filename, notebook=False)
