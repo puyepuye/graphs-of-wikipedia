@@ -20,11 +20,10 @@ def convert_to_networkx(custom_graph):
     return nx_graph
 
 
-def summary(graph: dict, s1, s2):
+def summary(graph: dict, s1, s2, bound):
     min_len = len(BFS_path(graph, s1, s2))
-    paths = bidirectional(graph, s1, s2)
+    paths = bidirectional(graph, s1, s2, bound)
     num_paths_min_len = len([i for i in bidirectional(graph, s1, s2) if len(i) == min_len])
-    max_len = len(max(paths, key=len))
     summary_dict = {
         'min_path_len': f"The shortest path length between {s1} and {s2} is {min_len - 1}.",
         'num_of_paths': f"There are {len(paths)} possible path(s) between {s1} and {s2}.",
@@ -32,9 +31,9 @@ def summary(graph: dict, s1, s2):
         'num_of_vertices': f"There are {len({point for path in paths for point in path})} vertices in this graph."
     }
     return summary_dict
-    #'max_path': f"The longest path between {s1} and {s2} is {max(paths, key=len)} with the length of {max_len}.",
 
-def visualize_paths(graph, graph_dict, page_id1, page_id2):
+
+def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
     """
     Visualize all paths between two vertices in a graph using networkx and plotly.
 
@@ -42,7 +41,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2):
     - graph: The graph object (as a networkx Graph).
     - page_id1, page_id2: The IDs of the two vertices to find paths between.
     """
-    all_paths = bidirectional(graph_dict, page_id1, page_id2)
+    all_paths = bidirectional(graph_dict, page_id1, page_id2, bound)
     shortest_path = BFS_path(graph_dict, page_id1, page_id2)
 
     subgraph = graph.create_subgraph_from_paths(all_paths)
