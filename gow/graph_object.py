@@ -6,6 +6,7 @@ from collections import deque
 import json
 import os
 
+
 class _Vertex:
     """A vertex in a graph.
 
@@ -24,6 +25,7 @@ class _Vertex:
         """Initialize a new vertex with the given item and neighbours."""
         self.item = item
         self.neighbours = neighbours
+
 
 class Graph:
     """A graph.
@@ -68,7 +70,6 @@ class Graph:
             # We didn't find an existing vertex for both items.
             raise ValueError
 
-
     def adjacent(self, item1: Any, item2: Any) -> bool:
         """Return whether item1 and item2 are adjacent vertices in this graph.
 
@@ -92,8 +93,6 @@ class Graph:
             return {neighbour.item for neighbour in v.neighbours}
         else:
             raise ValueError
-
-
 
     def add_all_edges(self, edges: set[tuple[Any, Any]]) -> None:
         """Add all given edges to this graph.
@@ -157,10 +156,10 @@ class Graph:
                     visited.add(u)
         return edge_set
 
-    def create_subgraph_from_paths(graph, paths):
+    def create_subgraph_from_paths(graph, all_paths):
         """Create a new Graph containing only the nodes and edges from the given paths."""
         dict_graph = defaultdict(list)
-        for path in paths:
+        for path in all_paths:
             for i in range(len(path) - 1):
                 dict_graph[path[i]].append(path[i + 1])
 
@@ -176,32 +175,6 @@ class Graph:
 
         return graph
 
-def load_gow(pages_file: str) -> Graph:
-    graph = Graph()
-    unique_pages = {}
-
-    # Step 1: Add all vertices
-    with open(pages_file, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            page_id, page_title = row['page_id'], row['page_title']
-            unique_pages[page_id] = page_title
-            graph.add_vertex(page_title)
-
-    with open(pages_file, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            page_id = row['page_id']
-            page_title = unique_pages[page_id]
-            outgoing_links = ast.literal_eval(row['outgoing_links'])
-
-            for other_id in outgoing_links:
-                other_title = unique_pages.get(str(other_id))
-                if other_title:  # Check if the other page is in the dataset
-                    graph.add_edge(page_title, other_title)
-
-    return graph
-
 
 def load_dict_from_file(file_name):
     if os.path.exists(file_name):
@@ -210,15 +183,16 @@ def load_dict_from_file(file_name):
     else:
         return {}
 
+
 def load_gow_json(pages_file: str):
     graph = Graph()
     unique_pages = load_dict_from_file(pages_file)
 
-    #add_vertex
+    # add_vertex
     for page in unique_pages:
         graph.add_vertex(page)
 
-    #add_edge
+    # add_edge
     for page in unique_pages:
         for i in range(len(unique_pages[page])):
             if not unique_pages[page][i] in graph._vertices:
@@ -228,17 +202,16 @@ def load_gow_json(pages_file: str):
     return graph, unique_pages
 
 
-
 def BFS_path(G, s1, s2):
     E = set([s2])
     Q = deque([[s1]])
     while Q:
         path = Q.popleft()
-#         print(path)
+        #         print(path)
         node = path[-1]
         if node not in G:
             raise ValueError
-#         print(Q)
+        #         print(Q)
         if node == s2:
             return path
         if node not in E:
@@ -249,6 +222,7 @@ def BFS_path(G, s1, s2):
                 Q.append(newpath)
                 E.add(node)
     return []
+
 
 def DFS_paths(graph, start, end, path=[]):
     path = path + [start]
@@ -303,7 +277,8 @@ def bidirectional(graph, start_article, end_article, bound=None):
 
     if not get_links(start_article, graph) or not get_backlinks(end_article, graph):
         return {}
-    while list_a and list_b and (bound is None or len(paths) < bound) and len(list_a) < len(graph) and len(list_b) < len(graph):
+    while list_a and list_b and (bound is None or len(paths) < bound) and len(list_a) < len(graph) and len(
+            list_b) < len(graph):
         new_paths = []
         for path_a in list_a:
             current_article = path_a[-1]

@@ -47,7 +47,6 @@ def run_pygame_window():
     # To Text
     pygame.font.init()  # you have to call this at the start,
 
-
     # Fun Fact Text box
     BLACK = (0, 0, 0)
     DARK_GREEN = (0, 100, 0)
@@ -83,9 +82,13 @@ def run_pygame_window():
                     g_g, g_d = load_gow_json('../database/big_graph.json')
                     if input_text_1 in g_d and input_text_2 in g_d:
                         if BFS_path(g_d, input_text_1, input_text_2) != []:
-                            summary_dict = summary(g_d, input_text_1, input_text_2, bound)
+                            all_paths = visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
+                            summary_dict = summary(g_d, input_text_1, input_text_2, all_paths)
+                            if bound is not None:
+                                summary_dict.pop('num_of_paths')
+                            else:
+                                summary_dict.pop('all_num_of_paths')
                             fact = [v for v in summary_dict.values()]
-                            visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
                             fun_fact_display = True
                         else:
                             not_found = True

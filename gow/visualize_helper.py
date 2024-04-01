@@ -20,15 +20,16 @@ def convert_to_networkx(custom_graph):
     return nx_graph
 
 
-def summary(graph: dict, s1, s2, bound):
+def summary(graph: dict, s1, s2, all_paths):
     min_len = len(BFS_path(graph, s1, s2))
-    paths = bidirectional(graph, s1, s2, bound)
-    num_paths_min_len = len([i for i in bidirectional(graph, s1, s2) if len(i) == min_len])
+    num_paths_min_len = len([i for i in all_paths if len(i) == min_len])
     summary_dict = {
         'min_path_len': f"The shortest path length between {s1} and {s2} is {min_len - 1}.",
-        'num_of_paths': f"There are {len(paths)} possible path(s) between {s1} and {s2}.",
+        'num_of_paths': f"There are {len(all_paths)} possible path(s) between {s1} and {s2}.",
+        'all_num_of_paths': f"There are more than {len(all_paths)} possible path(s) between {s1} and {s2}.",
         'num_of_paths_with_min_length': f"There are {num_paths_min_len} path(s) with the length {min_len - 1}.",
-        'num_of_vertices': f"There are {len({point for path in paths for point in path})} vertices in this graph."
+        'num_of_vertices': f"There are {len({point for path in all_paths for point in path})} vertices in this graph.",
+
     }
     return summary_dict
 
@@ -137,3 +138,4 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
     )
 
     fig.show()
+    return all_paths
