@@ -12,10 +12,11 @@ def run_pygame_window():
 
     # Logo
     # Load the logo image
-    # logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
-    # logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
-    # logo_image = pygame.transform.scale(logo_image, logo_size)
-    # logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
+    logo_image = pygame.image.load('gow_logo.png')  # Replace with your logo image path
+    logo_size = (320, 120)
+    logo_image = pygame.transform.scale(logo_image, logo_size)
+    logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
+
 
     # Define colors and font
     BUTTON_NORMAL = (100, 200, 100)
@@ -189,6 +190,8 @@ def run_pygame_window():
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
         start_y = (window_height // 2) - (5 * rect_height) // 9 + 50
+
+        window.blit(logo_image, logo_rect)
 
         if no_vertex:
             twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font

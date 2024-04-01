@@ -54,7 +54,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
 
     x_values, y_values = zip(*pos.values())
     min_x, max_x = min(x_values), max(x_values)
-    #
+
     # Set the start and end nodes at the extreme sides of the layout
     pos[page_id1] = (min_x - 0.1 * (max_x - min_x), 0)  # Slightly left from the minimum x value
     pos[page_id2] = (max_x + 0.1 * (max_x - min_x), 0)  # Slightly right from the maximum x value
