@@ -1,18 +1,23 @@
-from graph_object import *
+"""
+This is a helper file that helps with visualizing.
+Woohoo! Sorry, there's nothing more interesting to write here.
+"""
 from plotly.graph_objs import Scatter, Figure
 import networkx as nx
+from graph_object import Graph, bfs_shortest_path_lengths, BFS_path, bidirectional, create_subgraph_from_paths
 
 
-def edge_in_path(edge, path):
+def edge_in_path(edge: str, path: list[str]) -> bool:
     """Check if an edge is in the shortest path."""
+    # return edge in path
     return any(edge == (path[i], path[i + 1]) or edge == (path[i + 1], path[i]) for i in range(len(path) - 1))
 
 
-def convert_to_networkx(custom_graph):
+def convert_to_networkx(custom_graph: Graph) -> Graph:
     """Convert a custom graph object to a NetworkX graph."""
     nx_graph = nx.Graph()
     # Assuming your custom Graph has methods to access its vertices and edges
-    for vertex in custom_graph._vertices:
+    for vertex in custom_graph.get_all_vertices():
         nx_graph.add_node(vertex)
     for edge in custom_graph.all_edge():
         # Assuming get_edges() returns a list of tuples (source, target)
@@ -20,7 +25,10 @@ def convert_to_networkx(custom_graph):
     return nx_graph
 
 
-def summary(graph: dict, s1, s2, bound):
+def summary(graph: dict, s1: any, s2: any, bound: int) -> dict[str, str]:
+    """
+    Returns a ductionary of information used for the main pygame app after graph has been visualized
+    """
     min_len = len(BFS_path(graph, s1, s2))
     paths = bidirectional(graph, s1, s2, bound)
     num_paths_min_len = len([i for i in bidirectional(graph, s1, s2) if len(i) == min_len])
@@ -33,26 +41,21 @@ def summary(graph: dict, s1, s2, bound):
     return summary_dict
 
 
-def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
+def visualize_paths(graph: Graph, graph_dict: dict, page_id1: str, page_id2: str, bound: int = None) -> None:
     """
     Visualize all paths between two vertices in a graph using networkx and plotly.
-
-    Args:
-    - graph: The graph object (as a networkx Graph).
-    - page_id1, page_id2: The IDs of the two vertices to find paths between.
     """
     all_paths = bidirectional(graph_dict, page_id1, page_id2, bound)
     shortest_path = BFS_path(graph_dict, page_id1, page_id2)
 
-    subgraph = graph.create_subgraph_from_paths(all_paths)
+    subgraph = create_subgraph_from_paths(all_paths)
 
     path_lengths = bfs_shortest_path_lengths(graph, page_id1)
 
     nx_subgraph = convert_to_networkx(subgraph)
     pos = nx.spring_layout(nx_subgraph)
-    #pos = nx.spring_layout(nx_subgraph, k=2.0, iterations=20) trying to spread it out more
 
-    x_values, y_values = zip(*pos.values())
+    x_values, _ = zip(*pos.values())
     min_x, max_x = min(x_values), max(x_values)
 
     # Set the start and end nodes at the extreme sides of the layout
@@ -92,11 +95,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
     # Now, create the node_trace with the correct colors for each node
     node_trace = Scatter(
         x=node_x, y=node_y, text=text, mode='markers+text', hoverinfo='text',
-        marker=dict(
-            color=node_colors,  # Apply the color list here
-            size=10,
-            line=dict(width=2)
-        )
+        marker={"color": node_colors, "size": 10, "line": {"width": 2}}
     )
 
     # Separate lists for shortest path edges and other edges
@@ -115,7 +114,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
 
     shortest_path_trace = Scatter(
         x=shortest_edge_x, y=shortest_edge_y,
-        line=dict(width=2.5, color='black'),
+        line={"width": 2.5, "color": 'black'},
         hoverinfo='text',
         text='Shortest Path',
         mode='lines'
@@ -123,7 +122,7 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
 
     other_edges_trace = Scatter(
         x=other_edge_x, y=other_edge_y,
-        line=dict(width=0.5, color='#888'),  # Regular edges
+        line={"width": 0.5, "color": '#888'},  # Regular edges
         hoverinfo='none',
         mode='lines'
     )
@@ -132,8 +131,19 @@ def visualize_paths(graph, graph_dict, page_id1, page_id2, bound=None):
     fig.update_layout(
         showlegend=False,
         hovermode='closest',
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)
+        xaxis={"showgrid": False, "zeroline": False, "showticklabels": False},
+        yaxis={"showgrid": False, "zeroline": False, "showticklabels": False}
     )
 
     fig.show()
+
+
+if __name__ == '__main__':
+    import python_ta
+
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136', 'W0221', 'E1101', 'E9998', 'R0914'],
+        'extra-imports': ['networkx', 'graph_object', 'plotly.graph_objs '],
+        'max-nested-blocks': 6
+    })
