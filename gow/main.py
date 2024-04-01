@@ -1,32 +1,49 @@
-import pygame
+"""
+Graphs of Wikipedia: Main file
+This file is where the GUI is handled using PyGame, relying on the helper functions
+created in the other files to complete its task. Enjoy!
+
+"""
+
 import sys
-from visualize_helper import *
-from graph_object import *
+import pygame
+from visualize_helper import summary, visualize_paths
+from graph_object import load_gow_json, bfs_path
 
+if __name__ == '__main__':
+    import python_ta
 
-def run_pygame_window():
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136', 'W0221', 'E1101', 'E9998'],
+        'extra-imports': ['networkx', 'pygame', 'sys', 'graph_object', 'visualize_helper'],
+        'max-nested-blocks': 6
+    })
     pygame.init()
     window_width, window_height = 800, 600
     window = pygame.display.set_mode((window_width, window_height))
     pygame.display.set_caption('Graph Of Wikipedia')
-
+    fact = []
     # Logo
     # Load the logo image
     logo_image = pygame.image.load('gow_logo.png')  # Replace with your logo image path
     logo_size = (320, 120)
     logo_image = pygame.transform.scale(logo_image, logo_size)
     logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
+<<<<<<< HEAD
 
+=======
+>>>>>>> abe003daeedd1f6ea63ed47c6b65cbec0bb86334
 
     # Define colors and font
-    BUTTON_NORMAL = (100, 200, 100)
-    BUTTON_HOVER = (100, 255, 100)
-    WHITE, BLACK, RED = (255, 255, 255), (0, 0, 0), (255, 0, 0)
+    button_normal = (100, 200, 100)
+    button_hover = (100, 255, 100)
+    white, black, red = (255, 255, 255), (0, 0, 0), (255, 0, 0)
     font = pygame.font.SysFont(None, 40)
 
     # Create input boxes above the button
-    input_box_1 = pygame.Rect(window_width // 2 - 250, window_height // 2 - 200, 500, 40)
-    input_box_2 = pygame.Rect(window_width // 2 - 250, window_height // 2 - 125, 500, 40)
+    input_box_1 = pygame.Rect(window_width // 2 - 250, window_height // 2 - 190, 500, 40)
+    input_box_2 = pygame.Rect(window_width // 2 - 250, window_height // 2 - 115, 500, 40)
     input_text_1, input_text_2 = '', ''
     active_box_1, active_box_2 = False, False
     fun_fact_display = False
@@ -35,12 +52,12 @@ def run_pygame_window():
     toggle1, toggle2 = True, False
     # Create a button
     button_font = pygame.font.SysFont(None, 30)
-    button_rect = pygame.Rect(window_width // 2 - 125, window_height // 2 - 40, 250, 50)
-    button_text = button_font.render('Find paths!', True, BLACK)
+    button_rect = pygame.Rect(window_width // 2 - 125, window_height // 2 - 35, 250, 50)
+    button_text = button_font.render('Find paths!', True, black)
 
     # Cursor logic
-    cursor_color = BLACK
-    cursor = pygame.Rect(input_box_1.topleft, (2, input_box_1.height-10))
+    cursor_color = black
+    cursor = pygame.Rect(input_box_1.topleft, (2, input_box_1.height - 10))
     cursor_visible = True
     last_cursor_switch_time = pygame.time.get_ticks()
     cursor_switch_interval = 500
@@ -48,24 +65,22 @@ def run_pygame_window():
     # To Text
     pygame.font.init()  # you have to call this at the start,
 
-
     # Fun Fact Text box
-    BLACK = (0, 0, 0)
-    DARK_GREEN = (0, 100, 0)
+    black = (0, 0, 0)
+    dark_green = (0, 100, 0)
     rect_width = 700  # Adjusted for wider rectangle
     rect_height = 40
     border_radius = 20
     circle_radius = rect_height // 1.7
     border_thickness = 2  # Thinner border
-    check1 = (180, 238)
-    check2 = (450, 238)
+    check1 = (180, 243)
+    check2 = (450, 243)
     check_r = 9
     bound = 50
 
     # Main loop
     running = True
     while running:
-        display_text = ""
         mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -83,10 +98,14 @@ def run_pygame_window():
                     print(f'Clicked with text 1: {input_text_1} and text 2: {input_text_2}')
                     g_g, g_d = load_gow_json('../database/big_graph.json')
                     if input_text_1 in g_d and input_text_2 in g_d:
-                        if BFS_path(g_d, input_text_1, input_text_2) != []:
-                            summary_dict = summary(g_d, input_text_1, input_text_2, bound)
-                            fact = [v for v in summary_dict.values()]
-                            visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
+                        if bfs_path(g_d, input_text_1, input_text_2):
+                            all_paths = visualize_paths(g_g, g_d, input_text_1, input_text_2, bound)
+                            summary_dict = summary(g_d, input_text_1, input_text_2, all_paths)
+                            if bound is not None:
+                                summary_dict.pop('num_of_paths')
+                            else:
+                                summary_dict.pop('all_num_of_paths')
+                            fact = list(summary_dict.values())
                             fun_fact_display = True
                         else:
                             not_found = True
@@ -144,48 +163,48 @@ def run_pygame_window():
         border_radius_input_box = 10
 
         # Drawing input boxes with rounded corners in the main loop
-        window.fill(WHITE)
+        window.fill(white)
 
         # Draw input boxes with rounded corners
-        pygame.draw.rect(window, BLACK, input_box_1, 2, border_radius=border_radius_input_box)
-        pygame.draw.rect(window, BLACK, input_box_2, 2, border_radius=border_radius_input_box)
-        text_surface_1 = font.render(input_text_1, True, BLACK)
+        pygame.draw.rect(window, black, input_box_1, 2, border_radius=border_radius_input_box)
+        pygame.draw.rect(window, black, input_box_2, 2, border_radius=border_radius_input_box)
+        text_surface_1 = font.render(input_text_1, True, black)
         window.blit(text_surface_1,
                     (input_box_1.x + 5, input_box_1.y + (input_box_1.height - text_surface_1.get_height()) // 2))
-        text_surface_2 = font.render(input_text_2, True, BLACK)
+        text_surface_2 = font.render(input_text_2, True, black)
         window.blit(text_surface_2,
                     (input_box_2.x + 5, input_box_2.y + (input_box_2.height - text_surface_2.get_height()) // 2))
 
         my_font = pygame.font.SysFont('Arial', 20)
         text_surface = my_font.render('to', False, (0, 0, 0))
 
-        window.blit(text_surface, (395, 145))
+        window.blit(text_surface, (395, 155))
 
         check_font = pygame.font.SysFont('Arial', 12)
         # Checkbox 1
         pygame.draw.circle(window, (200, 200, 200), check1, check_r)
-        pygame.draw.circle(window, BLACK, check1, check_r, 1)
-        check_text1 = check_font.render("Show top 50 paths (faster)", True, BLACK)
+        pygame.draw.circle(window, black, check1, check_r, 1)
+        check_text1 = check_font.render("Show top 50 paths (faster)", True, black)
         window.blit(check_text1, (check1[0] + check_r + 10, check1[1] - check_text1.get_height() // 2))
         # Checkbox 2
         pygame.draw.circle(window, (200, 200, 200), check2, check_r)
-        pygame.draw.circle(window, BLACK, check2, check_r, 1)
-        check_text2 = check_font.render("Show all paths", True, BLACK)
+        pygame.draw.circle(window, black, check2, check_r, 1)
+        check_text2 = check_font.render("Show all paths", True, black)
         window.blit(check_text2, (check2[0] + check_r + 10, check2[1] - check_text2.get_height() // 2))
 
         if toggle1:
-            pygame.draw.circle(window, BLACK, check1, check_r)
+            pygame.draw.circle(window, black, check1, check_r)
         if toggle2:
-            pygame.draw.circle(window, BLACK, check2, check_r)
+            pygame.draw.circle(window, black, check2, check_r)
 
         # Draw the cursor if the box is active and the cursor is visible
         if (active_box_1 or active_box_2) and cursor_visible:
             pygame.draw.rect(window, cursor_color, cursor)
 
         if button_rect.collidepoint(mouse_pos):
-            button_color = BUTTON_HOVER
+            button_color = button_hover
         else:
-            button_color = BUTTON_NORMAL
+            button_color = button_normal
 
         pygame.draw.rect(window, button_color, button_rect, border_radius=20)
         window.blit(button_text, button_text.get_rect(center=button_rect.center))
@@ -195,18 +214,18 @@ def run_pygame_window():
 
         if no_vertex:
             twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font
-            text_surface = twenty_font.render(f'Input Page not found in graph', True, RED)
-            window.blit(text_surface, (window_width//2 - 90, 60))
+            text_surface = twenty_font.render('Input Page not found in graph', True, red)
+            window.blit(text_surface, (window_width // 2 - 90, 60))
 
         if not_found:
             twenty_font = pygame.font.Font(None, 20)  # Using Pygame's default font
-            text_surface = twenty_font.render(f'Path not found', True, RED)
-            window.blit(text_surface, (window_width//2 - 45, 60))
+            text_surface = twenty_font.render('Path not found', True, red)
+            window.blit(text_surface, (window_width // 2 - 45, 60))
 
         if fun_fact_display:
             # fun_fact_icons = ["facts_icon/1.png"]
             for i in range(len(fact)):
-                rect_x = (window_width // 2) - 200 - circle_radius * 2 - 100 # Adjusted for circle to start more on the left
+                rect_x = (window_width // 2) - 200 - circle_radius * 2 - 100  # Moves circle to the left
                 rect_y = start_y + i * (rect_height + 10)  # 10 pixels space between each fact box
 
                 # Create the rectangle for the text box
@@ -214,17 +233,17 @@ def run_pygame_window():
                 circle_center = (rect_x + 10, rect_y + circle_radius - 2.5)
 
                 # Draw the textbox
-                pygame.draw.rect(window, DARK_GREEN, text_box_rect, border_thickness, border_radius)
-                pygame.draw.circle(window, DARK_GREEN, circle_center, circle_radius)  # Dark green circle
-                  # Adjust this value to change the font size
+                pygame.draw.rect(window, dark_green, text_box_rect, border_thickness, border_radius)
+                pygame.draw.circle(window, dark_green, circle_center, circle_radius)  # Dark green circle
+                # Adjust this value to change the font size
                 twenty_font = pygame.font.Font(None, 25)  # Using Pygame's default font
 
                 # Render the display text
-                text_surface = twenty_font.render(fact[i], True, BLACK)
-                text_x = text_box_rect.x + circle_radius * 2 - 5  # Adjusted to position text with the new circle position
+                text_surface = twenty_font.render(fact[i], True, black)
+                text_x = text_box_rect.x + circle_radius * 2 - 5  # Aligns text with the new circle position
                 text_y = text_box_rect.y + (text_box_rect.height - text_surface.get_height()) // 2
                 window.blit(text_surface, (text_x, text_y))
-                bg = pygame.image.load(f'facts_icon/{i+1}.png')
+                bg = pygame.image.load(f'facts_icon/{i + 1}.png')
                 bg = pygame.transform.scale(bg, (circle_radius * 2, circle_radius * 2))
                 window.blit(bg, (circle_center[0] - circle_radius, circle_center[1] - circle_radius))
 
@@ -232,7 +251,3 @@ def run_pygame_window():
 
     pygame.quit()
     sys.exit()
-
-
-if __name__ == '__main__':
-    run_pygame_window()

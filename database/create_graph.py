@@ -1,29 +1,23 @@
+"""
+Store Wikipedia Data in article_name: [list of outgoing articles] format in a dictionary and store in in a JSON file.
+"""
+import json
+from collections import defaultdict
+from typing import Any
 import requests
 from bs4 import BeautifulSoup
-import json
-import os
-from collections import defaultdict
+import python_ta
+
 
 def url_to_title(url: str) -> str:
-    """Converts a Wikipedia URL to a formatted title, by extracting the last part of the URL,
-        replacing underscores with spaces, and capitalizing the first letter of each word.
-        Returns a sring in the correct format.
-    """
-    # Step 1: Extract the last part of the URL
+    """Convert the input URL to just the title of the Wikipedia page"""
     last_part = url.split('/')[-1]
-
-    # Step 2: Replace underscores with spaces
     formatted_string = last_part.replace('_', ' ')
-
-    # Step 3: Capitalize the first letter of each word
     title = formatted_string.title()
-
     return title
 
-def save_dict_to_file(file_path, data):
-    """Saves a dictionary to a JSON file, merging existing data with the new data
-        if file already exists.
-    """
+def save_dict_to_file(file_path: str, data: defaultdict[Any, set]) -> None:
+    """Save graph data dictionary as a JSON file. If the JSON file already exists, update it instead."""
     try:
         with open(file_path, 'r') as file:
             existing_data = json.load(file)
@@ -49,23 +43,8 @@ def save_dict_to_file(file_path, data):
         json.dump(existing_data, file, indent=4)
 
 
-def load_dict_from_file(file_name):
-    """Loads a dictionary from a JSON file. If the file does not exist,
-        return an empty dictionary.
-    """
-    if os.path.exists(file_name):
-        with open(file_name, 'r') as file:
-            return json.load(file)
-    else:
-        return {}
-
-def get_links_in_page(current_url):
-    """Scrapes links from a Wikipedia page.
-
-        It makes an HTTP request to the URL, parses the HTML content using BeautifulSoup,
-        and extracts links that point to Wikipedia articles.
-    """
-    # Make a request to the current URL
+def get_links_in_page(current_url: str) -> list:
+    """Return all outgoing links of from the current_url's page using requests and BS4"""
     lst = []
     response = requests.get(current_url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -76,19 +55,22 @@ def get_links_in_page(current_url):
             lst.append(next_url)
     return lst
 
-def go_through_links_recursive(start_url, visited_file, graph_file, limit, level, current_level=0):
-    """Recursively traverses Wikipedia links starting from a given URL. It keeps track of visited URLs,
-        extracts links from each page, and saves the connections between articles to a graph file.
+
+def go_through_links_recursive(start: str, visited_f: str, graph_f: str, limit: int, current_level: int = 0) -> None:
     """
-    visited = set()
+    Recursively move through each link and its outgoing links and save their connection in a key value pair.
+    The key is the current page, and the values are all of its outgoing links obtained from get_links_in_page.
+    Update the graph and visited JSON files accordingly. Save only the number of outgoing links according to limit input
+    and stop the program if it finishes traversing through the input level (depth).
+    """
     data = defaultdict(set)
     try:
-        with open(visited_file, 'r') as f:
+        with open(visited_f, 'r') as f:
             visited = set(json.load(f))
     except FileNotFoundError:
-        pass
+        visited = set()
 
-    current_url = start_url
+    current_url = start
     current_title = url_to_title(current_url)
     # uncomment this if we do scrape the entire page's link to reduce run time
     if current_url not in visited:
@@ -99,24 +81,30 @@ def go_through_links_recursive(start_url, visited_file, graph_file, limit, level
             if title != current_title:
                 data[current_title].add(title)
 
-        print(current_url)
-    with open(visited_file, 'w') as f:
+    with open(visited_f, 'w') as f:
         json.dump(list(visited), f)
-    save_dict_to_file(graph_file, data)
+    save_dict_to_file(graph_f, data)
 
-    if current_level < level:
+    if current_level < 2:
         for link in get_links_in_page(current_url)[:limit]:
-            print(current_level)
-            go_through_links_recursive(link, visited_file, graph_file, limit, level, current_level + 1)
-    elif current_level == level:
+            go_through_links_recursive(link, visited_f, graph_f, limit, current_level + 1)
+    elif current_level == 2:
         for link in get_links_in_page(current_url)[:limit]:
             title = url_to_title(link)
             if title != current_title and link not in visited:
                 data[title] = set()
                 visited.add(link)
 
-        save_dict_to_file(graph_file, data)
+        save_dict_to_file(graph_f, data)
 
-# Example usage
-start_url = 'https://en.wikipedia.org/wiki/University_Of_Toronto'
-go_through_links_recursive(start_url, 'small_visited.json', 'small_graph.json', 15, 2)
+# # Example usage
+# start_url = 'https://en.wikipedia.org/wiki/University_Of_Toronto'
+# go_through_links_recursive(start_url, 'small_visited.json', 'small_graph.json', 15, 2)
+
+
+if __name__ == '__main__':
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136', 'W0221', 'E9998'],
+        'extra-imports': ['requests', 'bs4', 'json', 'os', 'collections', 'typing'],
+        'max-nested-blocks': 4})

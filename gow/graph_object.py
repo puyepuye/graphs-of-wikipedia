@@ -1,10 +1,11 @@
+""" Modified Graph class from CSC111 Course Notes and various pathfinder algorithms for
+finding paths between two Wikipedia articles """
 from __future__ import annotations
-from visualize_helper import *
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Any
-from collections import deque
 import json
 import os
+
 
 class _Vertex:
     """A vertex in a graph.
@@ -25,8 +26,9 @@ class _Vertex:
         self.item = item
         self.neighbours = neighbours
 
+
 class Graph:
-    """A graph.
+    """A Modified graph object obtained from CSC111 course.
 
     Representation Invariants:
         - all(item == self._vertices[item].item for item in self._vertices)
@@ -35,18 +37,18 @@ class Graph:
     #     - _vertices:
     #         A collection of the vertices contained in this graph.
     #         Maps item to _Vertex object.
-    _vertices: dict[Any, _Vertex]
+    vertices: dict[Any, _Vertex]
 
     def __init__(self) -> None:
         """Initialize an empty graph (no vertices or edges)."""
-        self._vertices = {}
+        self.vertices = {}
 
     def add_vertex(self, item: Any) -> None:
         """Add a vertex with the given item to this graph.
 
         The new vertex is not adjacent to any other vertices.
         """
-        self._vertices[item] = _Vertex(item, set())
+        self.vertices[item] = _Vertex(item, set())
 
     def add_edge(self, item1: Any, item2: Any) -> None:
         """Add an edge between the two vertices with the given items in this graph.
@@ -56,9 +58,9 @@ class Graph:
         Preconditions:
             - item1 != item2
         """
-        if item1 in self._vertices and item2 in self._vertices:
-            v1 = self._vertices[item1]
-            v2 = self._vertices[item2]
+        if item1 in self.vertices and item2 in self.vertices:
+            v1 = self.vertices[item1]
+            v2 = self.vertices[item2]
 
             # Add the new edge
             v1.neighbours.add(v2)
@@ -68,14 +70,13 @@ class Graph:
             # We didn't find an existing vertex for both items.
             raise ValueError
 
-
     def adjacent(self, item1: Any, item2: Any) -> bool:
         """Return whether item1 and item2 are adjacent vertices in this graph.
 
         Return False if item1 or item2 do not appear as vertices in this graph.
         """
-        if item1 in self._vertices and item2 in self._vertices:
-            it1 = self._vertices[item1]
+        if item1 in self.vertices and item2 in self.vertices:
+            it1 = self.vertices[item1]
             return any(v2.item == item2 for v2 in it1.neighbours)
         else:
             return False
@@ -87,13 +88,11 @@ class Graph:
 
         Raise a ValueError if item does not appear as a vertex in this graph.
         """
-        if item in self._vertices:
-            v = self._vertices[item]
+        if item in self.vertices:
+            v = self.vertices[item]
             return {neighbour.item for neighbour in v.neighbours}
         else:
             raise ValueError
-
-
 
     def add_all_edges(self, edges: set[tuple[Any, Any]]) -> None:
         """Add all given edges to this graph.
@@ -117,27 +116,15 @@ class Graph:
         True
         """
         for v0, v1 in edges:
-            if v0 not in self._vertices:
+            if v0 not in self.vertices:
                 self.add_vertex(v0)
-            if v1 not in self._vertices:
+            if v1 not in self.vertices:
                 self.add_vertex(v1)
             self.add_edge(v0, v1)
 
-    def get_all_vertices(self, kind: str = '') -> set:
-        """Return a set of all vertex items in this graph.
-
-        If kind != '', only return the items of the given vertex kind.
-
-        Preconditions:
-            - kind in {'', 'user', 'book'}
-        """
-        if kind != '':
-            return {v.item for v in self._vertices.values() if v.kind == kind}
-        else:
-            return set(self._vertices.keys())
-
     def all_edge(self) -> set:
         """
+        return a set of all edges in the graph
         >>> example_graph = Graph()
         >>> example_graph.add_vertex(10)
         >>> example_graph.add_vertex(20)
@@ -150,204 +137,192 @@ class Graph:
         """
         edge_set = set()
         visited = set()
-        for u in self._vertices:
-            for i in self._vertices[u].neighbours:
+        for u in self.vertices:
+            for i in self.vertices[u].neighbours:
                 if i.item not in visited:
                     edge_set.add((u, i.item))
                     visited.add(u)
         return edge_set
 
-    def create_subgraph_from_paths(graph, paths):
-        """Create a new Graph containing only the nodes and edges from the given paths."""
-        dict_graph = defaultdict(list)
-        for path in paths:
-            for i in range(len(path) - 1):
-                dict_graph[path[i]].append(path[i + 1])
 
-        graph = Graph()
-        for page in dict_graph:
-            graph.add_vertex(page)
+def create_subgraph_from_paths(all_paths: list[str]) -> Graph:
+    """Create a new Graph containing only the nodes and edges from the given paths."""
+    dict_graph = defaultdict(list)
+    for path in all_paths:
+        for i in range(len(path) - 1):
+            dict_graph[path[i]].append(path[i + 1])
 
-        for page in dict_graph:
-            for i in range(len(dict_graph[page])):
-                if not dict_graph[page][i] in graph._vertices:
-                    graph.add_vertex(dict_graph[page][i])
-                graph.add_edge(page, dict_graph[page][i])
-
-        return graph
-
-def load_gow(pages_file: str) -> Graph:
     graph = Graph()
-    unique_pages = {}
+    for page in dict_graph:
+        graph.add_vertex(page)
 
-    # Step 1: Add all vertices
-    with open(pages_file, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            page_id, page_title = row['page_id'], row['page_title']
-            unique_pages[page_id] = page_title
-            graph.add_vertex(page_title)
-
-    with open(pages_file, 'r', encoding='utf-8') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            page_id = row['page_id']
-            page_title = unique_pages[page_id]
-            outgoing_links = ast.literal_eval(row['outgoing_links'])
-
-            for other_id in outgoing_links:
-                other_title = unique_pages.get(str(other_id))
-                if other_title:  # Check if the other page is in the dataset
-                    graph.add_edge(page_title, other_title)
+    for page in dict_graph:
+        for i in range(len(dict_graph[page])):
+            if not dict_graph[page][i] in graph.vertices:
+                graph.add_vertex(dict_graph[page][i])
+            graph.add_edge(page, dict_graph[page][i])
 
     return graph
 
 
-def load_dict_from_file(file_name):
+def load_dict_from_file(file_name: str) -> dict:
+    """Return the graph dictionary from JSON file. Each page is a key and all the outgoing links are the values."""
     if os.path.exists(file_name):
         with open(file_name, 'r') as file:
             return json.load(file)
     else:
         return {}
 
-def load_gow_json(pages_file: str):
+
+def load_gow_json(pages_file: str) -> tuple[Graph, dict]:
+    """Return the graph as a Graph object and a dictionary of unique pages"""
     graph = Graph()
     unique_pages = load_dict_from_file(pages_file)
 
-    #add_vertex
+    # add_vertex
     for page in unique_pages:
         graph.add_vertex(page)
 
-    #add_edge
+    # add_edge
     for page in unique_pages:
         for i in range(len(unique_pages[page])):
-            if not unique_pages[page][i] in graph._vertices:
+            if not unique_pages[page][i] in graph.vertices:
                 graph.add_vertex(unique_pages[page][i])
             graph.add_edge(page, unique_pages[page][i])
 
     return graph, unique_pages
 
 
-
-def BFS_path(G, s1, s2):
-    E = set([s2])
-    Q = deque([[s1]])
-    while Q:
-        path = Q.popleft()
-#         print(path)
+def bfs_path(graph: dict, s1: str, s2: str) -> list[str]:
+    """Find and return a single path between article s1 and article s2 in the graph G"""
+    visited = set(s2)
+    queue = deque([[s1]])
+    while queue:
+        path = queue.popleft()
         node = path[-1]
-        if node not in G:
+        if node not in graph:
             raise ValueError
-#         print(Q)
         if node == s2:
             return path
-        if node not in E:
-            adjacents = G[node]
+        if node not in visited:
+            adjacents = graph[node]
             for i in adjacents:
                 newpath = list(path)
                 newpath.append(i)
-                Q.append(newpath)
-                E.add(node)
+                queue.append(newpath)
+                visited.add(node)
     return []
 
-def DFS_paths(graph, start, end, path=[]):
-    path = path + [start]
-    if start == end:
-        return [path]
-    if start not in graph:
-        return []
-    paths = []
-    for node in graph[start]:
-        if node not in path:
-            new_paths = DFS_paths(graph, node, end, path)
-            for new_path in new_paths:
-                paths.append(new_path)
-    return paths
+
+def get_links(article: str, loc_graph: dict) -> list[str]:
+    """Helper function to return all outgoing links from the input article"""
+    return loc_graph.get(article, [])
 
 
-def bidirectional(graph, start_article, end_article, bound=None):
-    def get_links(article, graph):
-        return graph.get(article, [])
+def get_backlinks(article: str, loc_graph: dict) -> list[str]:
+    """Helper function to return all incoming links from the input article"""
+    backlinks = []
+    for article_name, links in loc_graph.items():
+        if article in links:
+            backlinks.append(article_name)
+    return backlinks
 
-    def get_backlinks(article, graph):
-        backlinks = []
-        for article_name, links in graph.items():
-            if article in links:
-                backlinks.append(article_name)
-        return backlinks
 
-    def extend_path(path, link):
-        new_path = list(path)
-        new_path.append(link)
-        return new_path
+def extend_path(path: list, loc_link: str) -> list[str]:
+    """Helper function to return new extended path"""
+    new_path = list(path)
+    new_path.append(loc_link)
+    return new_path
 
-    def remove_middle_section(path):
-        visited = set()
-        new_path = []
 
-        for vertex in path:
-            if vertex not in visited:
-                visited.add(vertex)
-                new_path.append(vertex)
-            else:
-                # Found the second occurrence of the vertex, remove the middle section
-                idx = new_path.index(vertex)
-                new_path = new_path[:idx + 1]
-                visited = set(new_path)
+def remove_middle_section(path: list[str]) -> tuple[list[str]]:
+    """Return a tuple of the paths deleting vertices that appears twice in the list."""
+    visited = set()
+    new_path = []
 
-        return tuple(new_path)
+    for vertex in path:
+        if vertex not in visited:
+            visited.add(vertex)
+            new_path.append(vertex)
+        else:
+            # Found the second occurrence of the vertex, remove the middle section
+            ind = new_path.index(vertex)
+            new_path = new_path[:ind + 1]
+            visited = set(new_path)
+
+    return tuple(new_path)
+
+
+def find_intersection(paths: set, l_a: list, l_b: list, end: str, start: str) -> None:
+    """Helper function to find intersection from the path from the start article and path from the end article."""
+    for path_a in l_a:
+        for path_b in l_b:
+            if path_a[-1] == path_b[-1]:
+                paths.add(tuple(path_a + path_b[::-1]))
+            if path_a[-1] == end:
+                paths.add(tuple(path_a))
+            if path_b[-1] == start:
+                paths.add(tuple(path_b))
+
+
+def bidirectional(graph: dict, start: str, end: str, bound: int or bool = None) -> list:
+    """ Pathfinder algorithm that start searches from the start and the end article simultaneosly and find the
+    mid-point using incoming and outgoing links of each page. Return the list of shortest path with the size
+    according to the input bound (number of paths)."""
+
+    def append_new_paths_a() -> None:
+        """Helper function to check intersecting links and append to paths (a)"""
+        if link == end:
+            paths.add(tuple(path_a[::-1] + [link]))
+        if link in list_b[0]:
+            idx = list_b[0].index(link)
+            new_path_a = extend_path(path_a, link)
+            new_path_b = list_b[0][:idx]
+            new_paths.append(new_path_a + new_path_b[::-1])
+        elif link not in path_a:
+            new_paths.append(extend_path(path_a, link))
+
+    def append_new_paths_b() -> None:
+        """Helper function to check intersecting links and append to paths (b)"""
+        if link == start:
+            paths.add(tuple([link] + path_b[::-1]))
+        if link in list_a[0]:
+            idx = list_a[0].index(link)
+            new_path_b = extend_path(path_b, link)
+            new_path_a = list_a[0][:idx]
+            if new_path_b[-1] == start:
+                paths.add(tuple([link] + path_b[::-1]))
+            new_paths.append(new_path_a[::-1] + new_path_b)
+        elif link not in path_b:
+            new_paths.append(extend_path(path_b, link))
 
     paths = set()
-    list_a = [[start_article]]
-    list_b = [[end_article]]
+    list_a = [[start]]
+    list_b = [[end]]
 
-    if not get_links(start_article, graph) or not get_backlinks(end_article, graph):
-        return {}
-    while list_a and list_b and (bound is None or len(paths) < bound) and len(list_a) < len(graph) and len(list_b) < len(graph):
+    if not get_links(start, graph) or not get_backlinks(end, graph):
+        return []
+    while list_a and list_b and (bound is None or len(paths) < bound) and len(list_a) < len(graph) and len(
+            list_b) < len(graph):
         new_paths = []
         for path_a in list_a:
             current_article = path_a[-1]
             for link in get_links(current_article, graph):
-                if link == end_article:
-                    paths.add(tuple(path_a[::-1] + [link]))
-                if link in list_b[0]:
-                    idx = list_b[0].index(link)
-                    new_path_a = extend_path(path_a, link)
-                    new_path_b = list_b[0][:idx]
-                    new_paths.append(new_path_a + new_path_b[::-1])
-                elif link not in path_a:
-                    new_paths.append(extend_path(path_a, link))
+                append_new_paths_a()
         list_a = new_paths
 
         new_paths = []
         for path_b in list_b:
             current_article = path_b[-1]
             for link in get_backlinks(current_article, graph):
-                if link == start_article:
-                    paths.add(tuple([link] + path_b[::-1]))
-                if link in list_a[0]:
-                    idx = list_a[0].index(link)
-                    new_path_b = extend_path(path_b, link)
-                    new_path_a = list_a[0][:idx]
-                    if new_path_b[-1] == start_article:
-                        paths.add(tuple([link] + path_b[::-1]))
-                    new_paths.append(new_path_a[::-1] + new_path_b)
-                elif link not in path_b:
-                    new_paths.append(extend_path(path_b, link))
+                append_new_paths_b()
         list_b = new_paths
+        find_intersection(paths, list_a, list_b, end, start)
 
-        for path_a in list_a:
-            for path_b in list_b:
-                if path_a[-1] == path_b[-1]:
-                    paths.add(tuple(path_a + path_b[::-1]))
-                if path_a[-1] == end_article:
-                    paths.add(tuple(path_a))
-                if path_b[-1] == start_article:
-                    paths.add(tuple(path_b))
     return sorted(list({remove_middle_section(path) for path in paths}), key=len)[:bound]
 
 
-def bfs_shortest_path_lengths(graph, source_item) -> dict:
+def bfs_shortest_path_lengths(graph: Graph, source_item: str) -> dict:
     """
     Calculate the shortest path lengths from the source_item to all other vertices
     in the graph using a BFS traversal.
@@ -361,7 +336,7 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
     If a vertex is unreachable from the source, it will not appear in the dictionary.
     """
     # Initialize distances dictionary with infinity for all vertices
-    distances = {vertex.item: float('inf') for vertex in graph._vertices.values()}
+    distances = {vertex.item: float('inf') for vertex in graph.vertices.values()}
     # Set the distance to the source itself to 0
     distances[source_item] = 0
 
@@ -370,7 +345,7 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
 
     while queue:
         current_item = queue.popleft()
-        current_vertex = graph._vertices[current_item]
+        current_vertex = graph.vertices[current_item]
 
         for neighbour in current_vertex.neighbours:
             # If the neighbour hasn't been visited (distance is infinity)
@@ -385,8 +360,18 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
 
 
 if __name__ == '__main__':
-    # graph = load_gow('../database/pages_links.csv')
-    # visualize_paths(graph, 'Animals' , 'Dog')
-    #Testing below
-    graph, graph_dict = load_gow_json('../database/mini_graph.json')
-    visualize_paths(graph, graph_dict, 'Toronto Metropolitan University', 'Rhombicosidodecahedron')
+    # graph_dict = load_dict_from_file('../database/small_graph.json')
+    # start_article = 'Jarrow'
+    # end_article = 'Tree Model'
+    # test_paths = bidirectional(graph_dict, start_article, end_article)
+    # print(test_paths)
+    # print(bfs_path(graph_dict, start_article, end_article))
+    import python_ta
+
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'disable': ['E1136', 'W0221', 'E9998'],
+        'extra-imports': ['__future__', 'visualize_helper', 'networkx', 'collections', 'typing', 'json', 'os'],
+        'max-nested-blocks': 4
+    })
+
