@@ -5,6 +5,10 @@ import os
 from collections import defaultdict
 
 def url_to_title(url: str) -> str:
+    """Converts a Wikipedia URL to a formatted title, by extracting the last part of the URL,
+        replacing underscores with spaces, and capitalizing the first letter of each word.
+        Returns a sring in the correct format.
+    """
     # Step 1: Extract the last part of the URL
     last_part = url.split('/')[-1]
 
@@ -17,6 +21,9 @@ def url_to_title(url: str) -> str:
     return title
 
 def save_dict_to_file(file_path, data):
+    """Saves a dictionary to a JSON file, merging existing data with the new data
+        if file already exists.
+    """
     try:
         with open(file_path, 'r') as file:
             existing_data = json.load(file)
@@ -43,6 +50,9 @@ def save_dict_to_file(file_path, data):
 
 
 def load_dict_from_file(file_name):
+    """Loads a dictionary from a JSON file. If the file does not exist,
+        return an empty dictionary.
+    """
     if os.path.exists(file_name):
         with open(file_name, 'r') as file:
             return json.load(file)
@@ -50,6 +60,11 @@ def load_dict_from_file(file_name):
         return {}
 
 def get_links_in_page(current_url):
+    """Scrapes links from a Wikipedia page.
+
+        It makes an HTTP request to the URL, parses the HTML content using BeautifulSoup,
+        and extracts links that point to Wikipedia articles.
+    """
     # Make a request to the current URL
     lst = []
     response = requests.get(current_url)
@@ -62,6 +77,9 @@ def get_links_in_page(current_url):
     return lst
 
 def go_through_links_recursive(start_url, visited_file, graph_file, limit, level, current_level=0):
+    """Recursively traverses Wikipedia links starting from a given URL. It keeps track of visited URLs,
+        extracts links from each page, and saves the connections between articles to a graph file.
+    """
     visited = set()
     data = defaultdict(set)
     try:
