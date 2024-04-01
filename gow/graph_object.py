@@ -391,10 +391,8 @@ if __name__ == '__main__':
     start_article = 'Jarrow'
     end_article = 'Tree Model'
     paths = bidirectional(graph_dict, start_article, end_article)
-    print(paths)
     path = paths.pop()
-    nx_graph = convert_to_networkx(graph,path)
-    # pos = nx.circular_layout(nx_graph)
-    # nx.draw(nx_graph, pos)
-    
-    drawgraph3(nx_graph,path, show_buttons=True,output_filename='graph_output.html', notebook=False)
+    nx_graph = convert_to_networkx(graph)
+    pos = nx.circular_layout(nx_graph)
+    nx.draw(nx_graph, pos)
+    drawgraph3(nx_graph,path,output_filename='graph_output.html', notebook=False)

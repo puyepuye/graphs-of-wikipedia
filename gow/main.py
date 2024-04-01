@@ -11,10 +11,10 @@ def run_pygame_window():
 
     #Logo
     # Load the logo image
-    logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
-    logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
-    logo_image = pygame.transform.scale(logo_image, logo_size)
-    logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
+    # logo_image = pygame.image.load('path_to_logo_image.png')  # Replace with your logo image path
+    # logo_size = (100, 100)  # Desired dimensions (width, height) of the logo
+    # logo_image = pygame.transform.scale(logo_image, logo_size)
+    # logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
 
     # Define colors and font
     BUTTON_NORMAL = (100, 200, 100)
@@ -75,12 +75,16 @@ def run_pygame_window():
                     cursor.topleft = (input_box_2.x + font.size(input_text_2)[0] + 5, input_box_2.y + 5)
                 elif button_rect.collidepoint(event.pos):
                     print(f'Clicked with text 1: {input_text_1} and text 2: {input_text_2}')
-                    g_g, g_d = load_gow_json('../database/big_graph.json')
+                    g_g, g_d = load_gow_json('database/small_graph.json')
                     if input_text_1 in g_d and input_text_2 in g_d:
                         if BFS_path(g_d, input_text_1, input_text_2) != []:
                             summary_dict = summary(g_d, input_text_1, input_text_2)
                             fact = [v for v in summary_dict.values()]
-                            visualize_paths(g_g, g_d, input_text_1, input_text_2)
+                            #visualize_paths(g_g, g_d, input_text_1, input_text_2)
+                            paths = bidirectional(g_d, input_text_1, input_text_2)
+                            path = paths.pop()
+                            nx_graph = convert_to_networkx(g_g)
+                            drawgraph3(nx_graph, path,output_filename='graph_output.html')
                             fun_fact_display = True
                         else:
                             not_found = True
