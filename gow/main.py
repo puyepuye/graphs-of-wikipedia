@@ -30,10 +30,6 @@ if __name__ == '__main__':
     logo_size = (320, 120)
     logo_image = pygame.transform.scale(logo_image, logo_size)
     logo_rect = logo_image.get_rect(center=(window_width // 2, logo_size[1] // 2))
-<<<<<<< HEAD
-
-=======
->>>>>>> abe003daeedd1f6ea63ed47c6b65cbec0bb86334
 
     # Define colors and font
     button_normal = (100, 200, 100)
