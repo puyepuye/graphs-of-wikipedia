@@ -16,6 +16,7 @@ def url_to_title(url: str) -> str:
     title = formatted_string.title()
     return title
 
+
 def save_dict_to_file(file_path: str, data: defaultdict[Any, set]) -> None:
     """Save graph data dictionary as a JSON file. If the JSON file already exists, update it instead."""
     try:

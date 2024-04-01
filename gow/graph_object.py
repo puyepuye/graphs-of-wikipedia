@@ -374,4 +374,3 @@ if __name__ == '__main__':
         'extra-imports': ['__future__', 'visualize_helper', 'networkx', 'collections', 'typing', 'json', 'os'],
         'max-nested-blocks': 4
     })
-
