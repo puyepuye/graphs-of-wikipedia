@@ -385,9 +385,7 @@ def bfs_shortest_path_lengths(graph, source_item) -> dict:
 
 
 if __name__ == '__main__':
-    graph_dict = load_dict_from_file('../database/small_graph.json')
-    start_article = 'Jarrow'
-    end_article = 'Tree Model'
-    paths = bidirectional(graph_dict, start_article, end_article)
-    print(paths)
-    print(BFS_path(graph_dict, start_article, end_article))
+    # graph = load_gow('../database/pages_links.csv')
+    # visualize_paths(graph, 'Animals' , 'Dog')
+    graph, graph_dict = load_gow_json('../database/mini_graph.json')
+    visualize_paths(graph, graph_dict, 'Toronto Metropolitan University', 'Rhombicosidodecahedron')
